@@ -1,64 +1,29 @@
 import express from 'express';
-import cors from 'cors';
-import pino from 'pino-http';
 import 'dotenv/config';
+import cors from 'cors';
+
+import connectMongoDB from './db/connectMongoDB.js';
+
+import logger from './middleware/logger.js';
+import notFoundHandler from './middleware/notFoundHandler.js';
+import errorHandler from './middleware/errorHandler.js';
+
+import notesRoutes from './routes/notesRoutes.js';
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
 
-//Middleware
+app.use(logger);
 app.use(express.json());
 app.use(cors());
 
-app.use(
-  pino({
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'HH:MM:ss',
-        ignore: 'pid,hostname',
-        messageFormat:
-          '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
-  }),
-);
+app.use(notesRoutes);
 
-//Реалізація маршрутів
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-app.get('/notes/:noteId', (req, res) => {
-  const noteId = Number(req.params.noteId);
-  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
-});
+await connectMongoDB();
 
-// Штучна помилка
-app.get('/test-error', () => {
-  throw new Error('Simulated server error');
-});
-
-//Обробка неіснуючих маршрутів
-app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route not found',
-  });
-});
-
-//Обробка помилок
-app.use((err, req, res, next) => {
-  console.error(err);
-
-  const isProd = process.env.NODE_ENV === 'production';
-
-  res.status(500).json({
-    message: isProd ? 'Internal Server Error' : err.message,
-  });
-});
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
