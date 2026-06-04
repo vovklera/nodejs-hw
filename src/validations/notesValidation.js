@@ -3,13 +3,13 @@ import { TAGS } from '../constants/tags';
 import { isValidObjectId } from 'mongoose';
 
 export const getAllNotesSchema = {
-  [Segments.PARAMS]: Joi.object({
-    page: Joi.number().min(1).default(1).required(),
-    perPage: Joi.number().min(5).max(20).default(10).required(),
+  [Segments.QUERY]: Joi.object({
+    page: Joi.number().min(1).default(1).integer().required(),
+    perPage: Joi.number().min(5).max(20).default(10).integer().required(),
     tag: Joi.string()
       .min(1)
       .valid(...TAGS),
-    search: Joi.string.empty(''),
+    search: Joi.string().trim().allow(''),
   }),
 };
 
