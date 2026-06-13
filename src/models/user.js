@@ -22,13 +22,13 @@ const userSchema = new Schema(
   },
 );
 
-User.pre('save', function () {
+userSchema.pre('save', function () {
   if (!this.username) {
     this.username = this.email;
   }
 });
 
-User.methods.toJSON = function () {
+userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   return obj;
