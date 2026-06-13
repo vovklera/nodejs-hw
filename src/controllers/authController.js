@@ -4,7 +4,7 @@ import { User } from '../models/user.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
 import { Session } from '../models/session.js';
 
-export const registerUser = async (res, req) => {
+export const registerUser = async (req, res) => {
   const { email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
@@ -26,12 +26,12 @@ export const registerUser = async (res, req) => {
   res.status(201).json(newUser);
 };
 
-export const loginUser = async (res, req) => {
+export const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw createHttpError(401, 'jInvalid credentials');
+    throw createHttpError(401, 'Invalid credentials');
   }
 
   const isValidPassword = await bcrypt.compare(password, user.password);
@@ -48,7 +48,7 @@ export const loginUser = async (res, req) => {
   res.status(200).json(user);
 };
 
-export const logoutUser = async (res, req) => {
+export const logoutUser = async (req, res) => {
   const { sessionId } = req.cookies;
 
   if (sessionId) {
@@ -62,7 +62,7 @@ export const logoutUser = async (res, req) => {
   res.status(204).send();
 };
 
-export const refreshUserSession = async (res, req) => {
+export const refreshUserSession = async (req, res) => {
   const { sessionId, refreshToken } = req.cookies;
 
   if (!sessionId || !refreshToken) {
